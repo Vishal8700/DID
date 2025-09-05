@@ -1,0 +1,43 @@
+.container {
+  max-width: 420px;
+  margin: 60px auto;
+  padding: 2rem;
+  border-radius: 1.1rem;
+  background: #f9f9fa;
+  box-shadow: 0 0 16px #d7e0ec4d;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+h2 {
+  margin-bottom: 1.3rem;
+  color: #1976d2;
+}
+
+.btn {
+  padding: 0.8em 1.4em;
+  margin: 0.4em 0.2em;
+  background: #1976d2;
+  border: none;
+  color: #fff;
+  border-radius: 0.6em;
+  font-size: 1.1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn:disabled {
+  background: #90caf9;
+  cursor: not-allowed;
+}
+.info {
+  word-break: break-all;
+  font-size: 0.96em;
+  color: #222;
+  margin: 0.2em 0;
+}
+.status {
+  margin-top: 1.2em;
+  color: #393;
+  font-weight: 600;
+  font-size: 1.05em;
+}
