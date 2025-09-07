@@ -1,0 +1,608 @@
+/* Container Layout */
+.auth-container {
+  display: flex;
+  min-height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Left Image Side */
+.image-side {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: block;
+}
+
+.team-image {
+  width: 100%;
+  height: 100vh;
+  object-fit: cover;
+  filter: brightness(0.85);
+}
+
+.image-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(147, 51, 234, 0.1) 100%);
+  z-index: 1;
+}
+
+.floating-elements {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.floating-circle {
+  position: absolute;
+  border-radius: 50%;
+  backdrop-filter: blur(10px);
+  background: rgba(255, 255, 255, 0.1);
+  animation: float 6s ease-in-out infinite;
+}
+
+.circle1 {
+  width: 80px;
+  height: 80px;
+  top: 15%;
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.circle2 {
+  width: 60px;
+  height: 60px;
+  bottom: 20%;
+  right: 15%;
+  background: rgba(59, 130, 246, 0.2);
+  animation-delay: 2s;
+}
+
+.circle3 {
+  width: 40px;
+  height: 40px;
+  top: 50%;
+  left: 8%;
+  background: rgba(147, 51, 234, 0.2);
+  animation-delay: 4s;
+}
+
+/* Right Side Form */
+.form-side {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  min-width: 400px;
+}
+
+.form-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 24px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(255, 255, 255, 0.2);
+  padding: 40px;
+  width: 100%;
+  max-width: 480px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Header Section */
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.logo {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+}
+
+.logo-icon {
+  width: 24px;
+  height: 24px;
+  color: white;
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e293b;
+  letter-spacing: 0.5px;
+}
+
+.title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #1e293b;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.subtitle {
+  color: #64748b;
+  font-size: 16px;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+/* Toggle Buttons */
+.toggle-container {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 12px;
+  padding: 4px;
+  margin-bottom: 32px;
+}
+
+.toggle-button {
+  flex: 1;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.toggle-button.active {
+  background: white;
+  color: #3b82f6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.toggle-button.inactive {
+  background: transparent;
+  color: #64748b;
+}
+
+.toggle-button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+.toggle-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Status Messages */
+.status-message {
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 1px solid transparent;
+}
+
+.status-message.success {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.status-message.error {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+/* Account Info */
+.account-info {
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.account-info p {
+  margin: 0;
+  color: #0c4a6e;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Settings Section */
+.settings-section {
+  margin: 20px 0;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+}
+
+.settings-section p {
+  margin: 0 0 12px 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.settings-section input {
+  width: 80px;
+  padding: 8px 12px;
+  margin-right: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.settings-section input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.settings-section button {
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.settings-section button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.settings-section button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.settings-section button.loading {
+  background: #6b7280;
+  opacity: 0.8;
+}
+
+/* Form Fields */
+.form {
+  margin-bottom: 24px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #374151;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.input,
+.password-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  font-size: 16px;
+  background: #f9fafb;
+  transition: all 0.2s ease;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.password-input {
+  padding-right: 50px;
+}
+
+.password-container {
+  position: relative;
+}
+
+.eye-button {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 4px;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.eye-button:hover {
+  color: #374151;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.eye-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Submit Buttons */
+.submit-button {
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 16px;
+  background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.submit-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+}
+
+.submit-button.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+.submit-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.submit-button.connected {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+/* Error States */
+.error-text {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+  font-weight: 500;
+}
+
+.input.error,
+.password-input.error {
+  border-color: #dc2626;
+  background: #fef2f2;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+}
+
+/* Focus States */
+.input:focus,
+.password-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+/* Loading States */
+.loading {
+  position: relative;
+  overflow: hidden;
+}
+
+.loading::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: loading-shimmer 1.5s infinite;
+}
+
+@keyframes loading-shimmer {
+  0% { left: -100%; }
+  100% { left: 100%; }
+}
+
+/* Animations */
+@keyframes float {
+  0%, 100% { 
+    transform: translateY(0px);
+  }
+  50% { 
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.form-card {
+  animation: fade-in 0.6s ease-out;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .auth-container {
+    flex-direction: column;
+  }
+  
+  .image-side {
+    height: 200px;
+    flex: none;
+  }
+  
+  .form-side {
+    min-width: auto;
+    padding: 16px;
+  }
+  
+  .form-card {
+    padding: 24px;
+    border-radius: 16px;
+  }
+  
+  .title {
+    font-size: 24px;
+  }
+  
+  .subtitle {
+    font-size: 14px;
+  }
+  
+  .toggle-button {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  
+  .settings-section {
+    padding: 16px;
+  }
+  
+  .settings-section input {
+    width: 60px;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .form-side {
+    padding: 12px;
+  }
+  
+  .form-card {
+    padding: 20px;
+  }
+  
+  .logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .logo-icon {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .logo-text {
+    font-size: 16px;
+  }
+  
+  .title {
+    font-size: 22px;
+  }
+  
+  .input,
+  .password-input {
+    padding: 12px 14px;
+    font-size: 14px;
+  }
+  
+  .submit-button {
+    padding: 14px;
+    font-size: 15px;
+  }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+  .form-side {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  }
+  
+  .form-card {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .title {
+    color: #f1f5f9;
+  }
+  
+  .subtitle {
+    color: #94a3b8;
+  }
+  
+  .toggle-container {
+    background: #334155;
+  }
+  
+  .toggle-button.inactive {
+    color: #94a3b8;
+  }
+  
+  .input,
+  .password-input {
+    background: #334155;
+    border-color: #475569;
+    color: #f1f5f9;
+  }
+  
+  .input:focus,
+  .password-input:focus {
+    background: #475569;
+  }
+}
+
+/* Accessibility improvements */
+.submit-button:focus,
+.toggle-button:focus,
+.eye-button:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .floating-circle {
+    animation: none;
+  }
+  
+  .form-card {
+    animation: none;
+  }
+  
+  .loading::after {
+    animation: none;
+  }
+  
+  * {
+    transition: none !important;
+  }
+}
