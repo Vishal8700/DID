@@ -119,11 +119,18 @@ function Success() {
                     {userInfo.address}
                   </p>
                 </div>
-                {userInfo.ensName && (
+                {userInfo.ensName ? (
                   <div>
                     <span className="text-sm font-medium text-slate-600">ENS Name:</span>
                     <p className="text-sm text-slate-900 font-medium bg-blue-50 px-3 py-2 rounded-lg mt-1">
                       {userInfo.ensName}
+                    </p>
+                  </div>
+                ) : (
+                  <div>
+                    <span className="text-sm font-medium text-slate-600">ENS Name:</span>
+                    <p className="text-sm text-slate-500 bg-slate-50 px-3 py-2 rounded-lg mt-1">
+                      No ENS name registered
                     </p>
                   </div>
                 )}
