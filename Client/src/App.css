@@ -14,21 +14,6 @@ h2 {
   color: #1976d2;
 }
 
-.btn {
-  padding: 0.8em 1.4em;
-  margin: 0.4em 0.2em;
-  background: #1976d2;
-  border: none;
-  color: #fff;
-  border-radius: 0.6em;
-  font-size: 1.1em;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-.btn:disabled {
-  background: #90caf9;
-  cursor: not-allowed;
-}
 .info {
   word-break: break-all;
   font-size: 0.96em;

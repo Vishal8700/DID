@@ -1,0 +1,18 @@
+.user-address {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem; /* Adjusted to match avatar size */
+  height: 2rem; /* Adjusted to match avatar size */
+  background-color: #d1d5db; /* Matches bg-gray-300 */
+  color: #374151; /* Matches text color */
+  border-radius: 9999px; /* Full circle like avatar */
+  font-size: 0.875rem; /* Matches text-sm */
+  overflow: hidden; /* Ensures truncation works */
+  white-space: nowrap; /* Prevents text wrapping */
+  text-overflow: ellipsis; /* Adds ellipsis for overflow */
+}
+
+.user-address:hover {
+  background-color: #e5e7eb; /* Slight hover effect */
+}
