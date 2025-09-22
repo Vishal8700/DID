@@ -87,7 +87,6 @@ function AppRegistration() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 overflow-hidden">
-      {/* Enhanced Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-2000"></div>
@@ -107,7 +106,7 @@ function AppRegistration() {
           {/* Header */}
           <div className="text-center mb-8">
             
-            <h1 className="text-4xl font-bold text-white mb-2">Register Your dApp</h1>
+            <h1 className="text-4xl font-bold text-white mb-2">Register Your DApp</h1>
             <p className="text-xl text-slate-300">Create your decentralized application with SIWE authentication</p>
           </div>
 
@@ -316,25 +315,26 @@ function AppRegistration() {
           </div>
         </div>
 
-        {/* Right Side - Image */}
+        {/* Right Side*/}
         <div className="hidden lg:flex flex-1 max-w-md items-center justify-center mt-26">
-          <div className="relative">
-            <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 to-purple-500/20 rounded-3xl blur-xl"></div>
-            <div className="relative bg-white/10 backdrop-blur-lg rounded-3xl border border-white/20 p-6 shadow-2xl">
-              <img
-                src="https://thumbs.dreamstime.com/b/blockchain-colored-vertical-poster-illustration-blockchain-colored-vertical-poster-illustration-outline-style-vector-112943915.jpg"
-                alt="Blockchain Development"
-                className="w-full h-126 object-cover rounded-2xl"
-              />
-              <div className="mt-6 text-center">
-                <h3 className="text-xl font-bold text-white mb-2">Build the Future</h3>
-                <p className="text-slate-300 text-sm">
-                  Create decentralized applications with cutting-edge blockchain technology
-                </p>
-              </div>             
-            </div>
+        <div className="relative w-full h-165 rounded-3xl overflow-hidden shadow-2xl">
+          
+          <img
+            src="./123456.jpg"
+            alt="Blockchain Development"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+
+          <div className="absolute inset-0 bg-black/40"></div>
+
+          <div className="relative z-10 flex flex-col items-center justify-end h-full text-center p-6 pb-8">
+            <h3 className="text-2xl font-bold text-white mb-2">Build the Future</h3>
+            <p className="text-slate-300 text-sm">
+              Create decentralized applications with cutting-edge blockchain technology
+            </p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );
