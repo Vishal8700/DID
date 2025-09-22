@@ -1,5 +1,6 @@
 import React from 'react';
 import { apps } from "../../data/app";
+import Profile from './Profile';
 
 
 function TabContent({ tab }) {
@@ -58,6 +59,14 @@ function TabContent({ tab }) {
         
          
        
+      </div>
+    );
+  }
+
+  if (tab === "Profile") {
+    return (
+      <div className="tab-content">
+        <Profile />
       </div>
     );
   }

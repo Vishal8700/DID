@@ -1,7 +1,7 @@
 import React from "react";
 
 function TabsHeader({ activeTab, setActiveTab }) {
-  const tabs = ["home", "apps", "files", "projects", "learn"];
+  const tabs = ["home", "Profile"];
 
   return (
     <div className="flex justify-start mt-6 mb-8">
