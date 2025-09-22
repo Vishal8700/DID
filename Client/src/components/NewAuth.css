@@ -142,6 +142,32 @@
   white-space: pre-line;
 }
 
+/* Info Box */
+.info-box {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+  border: 1px solid #bae6fd;
+  border-radius: 12px;
+  padding: 16px;
+  margin-top: 16px;
+  text-align: left;
+}
+
+.info-text {
+  color: #0c4a6e;
+  font-size: 14px;
+  line-height: 1.4;
+  margin: 0 0 8px 0;
+}
+
+.info-text:last-child {
+  margin-bottom: 0;
+}
+
+.info-text strong {
+  font-weight: 600;
+  color: #075985;
+}
+
 /* Toggle Buttons */
 .toggle-container {
   display: flex;

@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from 'react-router-dom';
+import NotificationBox from './NotificationBox';
 import "./Header.css";
 
-function Header({ setSidebarOpen, sidebarOpen, setMobileMenuOpen, notifications }) {
+function Header({ activeTab, setActiveTab, notifications, onNotificationOpenChange }) {
+  const navigate = useNavigate();
   const [userAddress, setUserAddress] = useState("");
+  const tabs = ["home", "Apps", "Profile"];
 
   // Fetch user address from token on mount
   useEffect(() => {
@@ -19,63 +23,104 @@ function Header({ setSidebarOpen, sidebarOpen, setMobileMenuOpen, notifications 
     }
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("Testnet_auth_token");
+    window.location.href = "/";
+  };
+
   return (
-    <header className="sticky top-0 z-10 h-16 flex items-center gap-3 border-b border-gray-200 backdrop-blur-md px-4 md:px-6">
-      <div className="flex-1 flex items-center justify-between">
-        <h1 className="text-lg font-semibold">Dashboard</h1>
+    <header className="sticky top-0 z-10 bg-white border-b border-gray-200 shadow-sm">
+      <div className="mx-4 md:mx-6 lg:mx-8 px-4 md:px-6 lg:px-8">
+        {/* Single row with brand, navigation, and actions */}
+        <div className="flex items-center justify-between h-16">
+          {/* Left: Brand + Navigation */}
+          <div className="flex items-center space-x-8">
+            {/* Brand */}
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-8 w-8 text-violet-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <h1 className="ml-2 text-xl font-bold text-gray-900">DID Auth</h1>
+            </div>
 
-        <div className="flex items-center gap-3">
-          <button className="btn btn-icon" title="Cloud Storage">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              viewBox="0 0 24 24"
-            >
-              <path d="M20 17.58A5 5 0 0018 9h-1.26A8 8 0 104 16.25" />
-              <path d="M16 16h1a4 4 0 000-8h-1.26" />
-            </svg>
-          </button>
+            {/* Navigation tabs */}
+            <nav className="hidden md:flex space-x-6">
+              {tabs.map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                    activeTab === tab
+                      ? "bg-violet-100 text-violet-700"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                  }`}
+                >
+                  {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                </button>
+              ))}
+            </nav>
+          </div>
 
-          <button className="btn btn-icon" title="Messages">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              viewBox="0 0 24 24"
-            >
-              <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h12a2 2 0 012 2z" />
-            </svg>
-          </button>
+          {/* Right: User info and actions */}
 
-          <button className="relative btn btn-icon" title="Notifications">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              viewBox="0 0 24 24"
-            >
-              <path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
-              <path d="M13.73 21a2 2 0 01-3.46 0" />
-            </svg>
-            {notifications > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-                {notifications}
+          
+          <div className="flex items-center space-x-4">
+            <div className="hidden lg:flex items-center space-x-2 text-sm text-gray-600">
+              <span>Connected:</span>
+              <span className="font-mono text-violet-600">
+                {userAddress ? `${userAddress.slice(0, 6)}...${userAddress.slice(-4)}` : "N/A"}
               </span>
-            )}
-          </button>          
+            </div>
+
+            <button className="p-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100" title="Cloud Storage">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                <path d="M20 17.58A5 5 0 0018 9h-1.26A8 8 0 104 16.25" />
+                <path d="M16 16h1a4 4 0 000-8h-1.26" />
+              </svg>
+            </button>
+
+            <NotificationBox onOpenChange={onNotificationOpenChange} />
+
+            <button
+              onClick={() => navigate('/register-app')}
+              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white text-sm font-medium rounded-lg transition-all duration-200 transform hover:scale-105"
+              title="Register New App"
+            >
+              <svg className="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              New App
+            </button>
+
+            <button 
+              onClick={handleLogout}
+              className="px-3 py-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+              title="Logout"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className="md:hidden border-t border-gray-200 pt-2 pb-2">
+          <nav className="flex space-x-4">
+            {tabs.map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200 ${
+                  activeTab === tab
+                    ? "bg-violet-100 text-violet-700"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </nav>
         </div>
       </div>
     </header>

@@ -306,4 +306,113 @@ app.post("/api/settings/relogin-period", authenticateJWT, async (req, res) => {
   }
 });
 
+// MongoDB Schema for registered applications
+const AppSchema = new mongoose.Schema({
+  appId: { type: String, unique: true, required: true },
+  appName: { type: String, required: true },
+  developerName: { type: String, required: true },
+  email: { type: String, required: true },
+  organizationName: String,
+  profession: { type: String, required: true },
+  category: String,
+  description: String,
+  ownerAddress: { type: String, required: true },
+  apiKey: { type: String, unique: true, required: true },
+  isActive: { type: Boolean, default: true },
+  createdAt: { type: Date, default: Date.now },
+  lastUsed: Date,
+  usage: {
+    totalRequests: { type: Number, default: 0 },
+    monthlyRequests: { type: Number, default: 0 },
+    lastReset: { type: Date, default: Date.now }
+  }
+});
+const App = mongoose.model("App", AppSchema);
+
+// POST: Register new application (authenticated)
+app.post("/api/register-app", authenticateJWT, async (req, res) => {
+  const { appName, developerName, email, organizationName, profession, category, description } = req.body;
+  
+  // Validation
+  if (!appName || !developerName || !email || !profession) {
+    return res.status(400).json({ 
+      success: false, 
+      error: "Missing required fields: appName, developerName, email, profession" 
+    });
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return res.status(400).json({ success: false, error: "Invalid email format" });
+  }
+
+  try {
+    // Generate unique IDs
+    const appId = 'app_' + Math.random().toString(36).substr(2, 16);
+    const apiKey = 'sk_' + Math.random().toString(36).substr(2, 32);
+
+    // Create new app
+    const newApp = await App.create({
+      appId,
+      appName,
+      developerName,
+      email,
+      organizationName,
+      profession,
+      category,
+      description,
+      ownerAddress: req.user.address,
+      apiKey
+    });
+
+    console.log(`New app registered: ${appName} by ${developerName} (${req.user.address})`);
+    
+    res.json({ 
+      success: true, 
+      appId: newApp.appId,
+      apiKey: newApp.apiKey,
+      message: "Application registered successfully" 
+    });
+  } catch (err) {
+    console.error("App registration error:", err);
+    if (err.code === 11000) {
+      return res.status(400).json({ success: false, error: "App with this name already exists" });
+    }
+    res.status(500).json({ success: false, error: "Failed to register application", details: err.message });
+  }
+});
+
+// GET: Get user's registered applications (authenticated)
+app.get("/api/my-apps", authenticateJWT, async (req, res) => {
+  try {
+    const apps = await App.find({ ownerAddress: req.user.address })
+      .select('-apiKey') // Don't return API keys in list
+      .sort({ createdAt: -1 });
+    
+    res.json({ success: true, apps });
+  } catch (err) {
+    console.error("Fetch apps error:", err);
+    res.status(500).json({ success: false, error: "Failed to fetch applications", details: err.message });
+  }
+});
+
+// GET: Get specific app details (authenticated)
+app.get("/api/app/:appId", authenticateJWT, async (req, res) => {
+  try {
+    const app = await App.findOne({ 
+      appId: req.params.appId, 
+      ownerAddress: req.user.address 
+    });
+    
+    if (!app) {
+      return res.status(404).json({ success: false, error: "Application not found" });
+    }
+    
+    res.json({ success: true, app });
+  } catch (err) {
+    console.error("Fetch app error:", err);
+    res.status(500).json({ success: false, error: "Failed to fetch application", details: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`Auth server running on http://localhost:${PORT}`));

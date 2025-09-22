@@ -1,62 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import './Dashboard.css';
 import Header from './Header.jsx';
-import TabsHeader from './TabsHeader';
-import TabContent from './TabContent';
-import Sidebar from './Sidebar.jsx';
+import TabContent from './DashboardTabContent.jsx';
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState("home");
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [expandedItems, setExpandedItems] = useState({});
   const [notifications] = useState(5);
-
-  // Automatically toggle sidebar for mobile
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth < 768) setSidebarOpen(false);
-      else setSidebarOpen(true);
-    };
-    window.addEventListener('resize', handleResize);
-    handleResize();
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  const toggleExpanded = (title) => {
-    setExpandedItems(prev => ({ ...prev, [title]: !prev[title] }));
-  };
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   return (
-    <div className="app">
-      <div className="animated-background"></div>
+    <div className="min-h-screen bg-gray-50">
+      <div className={`animated-background transition-all duration-300 ${
+        isNotificationOpen ? 'blur-sm' : ''
+      }`}></div>
 
-      {/* Sidebar */}
-      <Sidebar
-        sidebarOpen={sidebarOpen}
-        toggleExpanded={toggleExpanded}
-        expandedItems={expandedItems}
-        setSidebarOpen={setSidebarOpen}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
+      {/* Header with Navigation */}
+      <Header 
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        notifications={notifications}
+        onNotificationOpenChange={setIsNotificationOpen}
       />
 
       {/* Main Content */}
-      <div className={`main-content ${sidebarOpen ? 'sidebar-open' : ''}`}>
-        <Header 
-          setSidebarOpen={setSidebarOpen}
-          sidebarOpen={sidebarOpen}
-          setMobileMenuOpen={setMobileMenuOpen}
-          notifications={notifications}
-        />
-
-        <main className="main">
-          <div className="tabs-container">
-            <TabsHeader activeTab={activeTab} setActiveTab={setActiveTab} />
-            <TabContent tab={activeTab} />
-          </div>
-        </main>
-      </div>
+      <main className={`pt-6 px-6 md:px-8 lg:px-12 mx-4 md:mx-6 lg:mx-8 transition-all duration-300 ${
+        isNotificationOpen ? 'blur-sm' : ''
+      }`}>
+        <TabContent tab={activeTab} setActiveTab={setActiveTab} />
+      </main>
     </div>
   );
 }
