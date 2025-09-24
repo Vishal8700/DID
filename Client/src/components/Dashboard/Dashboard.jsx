@@ -14,7 +14,6 @@ function Dashboard() {
         isNotificationOpen ? 'blur-sm' : ''
       }`}></div>
 
-      {/* Header with Navigation */}
       <Header 
         activeTab={activeTab}
         setActiveTab={setActiveTab}

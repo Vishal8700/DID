@@ -1,0 +1,235 @@
+# SIWE Auth Package
+
+A complete SIWE (Sign-In with Ethereum) authentication package with all the features from your DID project. Drop-in authentication solution for existing Node.js/Express backends.
+
+## Features
+
+✅ **Core SIWE Authentication**
+- Challenge generation (`GET /challenge/:address`)
+- Signature verification (`POST /auth`)
+- JWT token issuance with configurable expiration
+
+✅ **User Management**
+- User info endpoint (`GET /userinfo`)
+- Login tracking and statistics
+- Configurable relogin periods (`POST /settings/relogin-period`)
+
+✅ **Developer Tools**
+- User statistics (`GET /stats/users`)
+- ENS name resolution (`POST /resolve-ens`)
+- Rate limiting with IPv6 support
+
+✅ **Security Features**
+- JWT authentication middleware
+- MongoDB integration
+- CORS configuration
+- IPv6-safe rate limiting
+
+## Installation
+
+```bash
+npm install siwe ethers jsonwebtoken mongoose cors express-rate-limit
+```
+
+## 🚀 Complete Setup Guide
+
+**👉 For detailed frontend + backend integration, see [SETUP_GUIDE.md](./SETUP_GUIDE.md)**
+
+## Quick Setup for Existing Backend
+
+### 1. Basic Integration
+
+```javascript
+const express = require('express');
+const { initializeSwecAuth, authenticateJWT } = require('./path/to/auth-package');
+
+const app = express();
+
+// Your existing middleware
+app.use(express.json());
+
+// Add SIWE auth routes
+const authRouter = initializeSwecAuth({
+  mongoUri: process.env.MONGODB_URI,
+  jwtSecret: process.env.JWT_SECRET,
+  corsOrigins: ['http://localhost:3000', 'https://yourdomain.com'],
+  domain: 'yourdomain.com',
+  uri: 'https://yourdomain.com',
+  chainId: 1, // or 137 for Polygon
+  infuraKey: process.env.INFURA_KEY, // Optional for ENS
+});
+
+// Mount auth routes
+app.use('/api/auth', authRouter);
+
+// Your existing routes...
+app.get('/api/protected', authenticateJWT(process.env.JWT_SECRET), (req, res) => {
+  res.json({ user: req.user, message: 'Protected route accessed!' });
+});
+```
+
+### 2. Environment Variables
+
+Create a `.env` file:
+
+```env
+MONGODB_URI=mongodb://localhost:27017/your-db
+# or MongoDB Atlas: mongodb+srv://user:pass@cluster.mongodb.net/dbname
+
+JWT_SECRET=your-super-secret-jwt-key-here
+INFURA_KEY=your-infura-project-id-here
+```
+
+### 3. Frontend Integration
+
+```javascript
+// Frontend wallet connection
+async function connectWallet() {
+  const accounts = await window.ethereum.request({ method: 'eth_connect' });
+  const address = accounts[0];
+  
+  // Get challenge
+  const challengeRes = await fetch(`/api/auth/challenge/${address}`);
+  const { challenge } = await challengeRes.json();
+  
+  // Sign challenge
+  const signature = await window.ethereum.request({
+    method: 'personal_sign',
+    params: [challenge, address],
+  });
+  
+  // Authenticate
+  const authRes = await fetch('/api/auth/auth', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ address, signature }),
+  });
+  
+  const { token } = await authRes.json();
+  localStorage.setItem('auth_token', token);
+}
+```
+
+## API Endpoints
+
+All endpoints are automatically mounted when you use `app.use('/api/auth', authRouter)`:
+
+### Authentication
+- `GET /api/auth/challenge/:address` - Get SIWE challenge
+- `POST /api/auth/auth` - Verify signature and get JWT token
+
+### User Management (Authenticated)
+- `GET /api/auth/userinfo` - Get authenticated user info
+- `POST /api/auth/settings/relogin-period` - Update JWT expiration time
+
+### Utilities
+- `GET /api/auth/stats/users` - Get user statistics (public)
+- `POST /api/auth/resolve-ens` - Resolve ENS name for address
+
+## Advanced Setup
+
+### Custom Route Prefix
+
+```javascript
+// Mount on different path
+app.use('/api/v1/authentication', authRouter);
+
+// Now endpoints are:
+// GET /api/v1/authentication/challenge/:address
+// POST /api/v1/authentication/auth
+```
+
+### Multiple Auth Instances
+
+```javascript
+// Different configs for different apps
+const adminAuth = initializeSwecAuth({
+  mongoUri: process.env.ADMIN_DB_URI,
+  jwtSecret: process.env.ADMIN_JWT_SECRET,
+  corsOrigins: ['https://admin.yourdomain.com'],
+});
+
+const publicAuth = initializeSwecAuth({
+  mongoUri: process.env.PUBLIC_DB_URI,
+  jwtSecret: process.env.PUBLIC_JWT_SECRET,
+  corsOrigins: ['https://app.yourdomain.com'],
+});
+
+app.use('/api/admin/auth', adminAuth);
+app.use('/api/public/auth', publicAuth);
+```
+
+### Using with Existing MongoDB Connection
+
+```javascript
+// If you already have mongoose connected
+const mongoose = require('mongoose');
+mongoose.connect(process.env.MONGODB_URI);
+
+// The auth package will use the existing connection
+const authRouter = initializeSwecAuth({
+  mongoUri: process.env.MONGODB_URI, // Same URI
+  jwtSecret: process.env.JWT_SECRET,
+});
+```
+
+## Configuration Options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `mongoUri` | string | ✅ | - | MongoDB connection URI |
+| `jwtSecret` | string | ✅ | - | JWT secret for token signing |
+| `corsOrigins` | string[] | ❌ | `['http://localhost:5173']` | Allowed CORS origins |
+| `domain` | string | ❌ | `'http://localhost:5173'` | SIWE domain |
+| `uri` | string | ❌ | `'http://localhost:5173'` | SIWE URI |
+| `chainId` | number | ❌ | `1` | SIWE chain ID (1=Ethereum, 137=Polygon) |
+| `infuraKey` | string | ❌ | `null` | Infura API key for ENS resolution |
+| `rateLimit` | object | ❌ | `{windowMs: 15*60*1000, max: 100}` | Rate limit configuration |
+
+## Middleware Usage
+
+```javascript
+const { authenticateJWT } = require('./path/to/auth-package');
+
+// Protect individual routes
+app.get('/api/profile', authenticateJWT(process.env.JWT_SECRET), (req, res) => {
+  // req.user contains { address: '0x...' }
+  res.json({ address: req.user.address });
+});
+
+// Protect all routes under a path
+app.use('/api/protected', authenticateJWT(process.env.JWT_SECRET));
+app.get('/api/protected/data', (req, res) => {
+  res.json({ data: 'This is protected', user: req.user });
+});
+```
+
+## Error Handling
+
+```javascript
+app.use((err, req, res, next) => {
+  if (err.name === 'UnauthorizedError') {
+    res.status(401).json({ error: 'Invalid token' });
+  } else {
+    next(err);
+  }
+});
+```
+
+## Testing
+
+```bash
+npm test
+```
+
+## Production Deployment
+
+1. **Set strong JWT secret**: Use a long, random string
+2. **Configure CORS**: Set specific origins, not wildcards
+3. **Use HTTPS**: Always use HTTPS in production
+4. **Rate limiting**: Adjust limits based on your needs
+5. **MongoDB**: Use MongoDB Atlas or secure self-hosted instance
+
+## License
+
+MIT
