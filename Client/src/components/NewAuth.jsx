@@ -4,15 +4,17 @@ import React, { useState, useEffect } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { ethers } from "ethers";
 import { jwtDecode } from "jwt-decode";
-import Dashboard from "./Dashboard/Dashboard"; // Import Dashboard instead of Success
+import Dashboard from "./Dashboard/Dashboard"; 
+import { useNotifications } from "../contexts/NotificationContext";
 import "./NewAuth.css";
 
 function TestnetAuth({ onAuthSuccess }) {
+  const { reloadNotifications, addLoginNotification } = useNotifications();
   const [account, setAccount] = useState("");
   const [ensName, setEnsName] = useState(null);
   const [challenge, setChallenge] = useState("");
   const [signature, setSignature] = useState("");
-  const [isLoading, setIsLoading] = useState(false); // No initial loading screen
+  const [isLoading, setIsLoading] = useState(false); 
   const [authStatus, setAuthStatus] = useState("");
   const [token, setToken] = useState(localStorage.getItem("Testnet_auth_token") || "");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -28,6 +30,8 @@ function TestnetAuth({ onAuthSuccess }) {
             const now = Date.now();
             if (expTime > now) {
               setIsAuthenticated(true);
+              // Reload notifications for the authenticated user
+              reloadNotifications();
               return;
             } else {
               setAuthStatus("Session expired. Please sign in again.");
@@ -145,6 +149,10 @@ function TestnetAuth({ onAuthSuccess }) {
                 // Small delay to show the success message
                 setTimeout(() => {
                   setIsAuthenticated(true);
+                  // Reload notifications for the authenticated user
+                  reloadNotifications();
+                  // Add login notification
+                  addLoginNotification(decoded.address);
                   onAuthSuccess && onAuthSuccess();
                 }, 1500);
                 return;

@@ -415,4 +415,79 @@ app.get("/api/app/:appId", authenticateJWT, async (req, res) => {
   }
 });
 
+// PUT: Update application details (authenticated)
+app.put("/api/apps/:appId", authenticateJWT, async (req, res) => {
+  const { name, developer, description, category } = req.body;
+  
+  // Validation
+  if (!name || !developer) {
+    return res.status(400).json({ 
+      success: false, 
+      error: "Missing required fields: name, developer" 
+    });
+  }
+
+  try {
+    const app = await App.findOne({ 
+      appId: req.params.appId, 
+      ownerAddress: req.user.address 
+    });
+    
+    if (!app) {
+      return res.status(404).json({ success: false, error: "Application not found" });
+    }
+
+    // Update app details
+    app.appName = name;
+    app.developerName = developer;
+    if (description !== undefined) app.description = description;
+    if (category !== undefined) app.category = category;
+    
+    await app.save();
+
+    console.log(`App updated: ${app.appName} by ${req.user.address}`);
+    
+    res.json({ 
+      success: true, 
+      message: "Application updated successfully",
+      app: {
+        appId: app.appId,
+        appName: app.appName,
+        developerName: app.developerName,
+        description: app.description,
+        category: app.category
+      }
+    });
+  } catch (err) {
+    console.error("App update error:", err);
+    res.status(500).json({ success: false, error: "Failed to update application", details: err.message });
+  }
+});
+
+// DELETE: Delete application (authenticated)
+app.delete("/api/apps/:appId", authenticateJWT, async (req, res) => {
+  try {
+    const app = await App.findOne({ 
+      appId: req.params.appId, 
+      ownerAddress: req.user.address 
+    });
+    
+    if (!app) {
+      return res.status(404).json({ success: false, error: "Application not found" });
+    }
+
+    await App.deleteOne({ _id: app._id });
+
+    console.log(`App deleted: ${app.appName} by ${req.user.address}`);
+    
+    res.json({ 
+      success: true, 
+      message: "Application deleted successfully" 
+    });
+  } catch (err) {
+    console.error("App deletion error:", err);
+    res.status(500).json({ success: false, error: "Failed to delete application", details: err.message });
+  }
+});
+
 app.listen(PORT, () => console.log(`Auth server running on http://localhost:${PORT}`));

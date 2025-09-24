@@ -12,24 +12,47 @@ export const useNotifications = () => {
 
 export const NotificationProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Get user-specific localStorage key
+  const getNotificationKey = () => {
+    const token = localStorage.getItem('Testnet_auth_token');
+    if (token) {
+      try {
+        // Decode JWT to get user address (simple base64 decode of payload)
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return `did_notifications_${payload.address}`;
+      } catch (err) {
+        console.error('Failed to decode token:', err);
+      }
+    }
+    return 'did_notifications_guest'; // Fallback for non-authenticated users
+  };
 
   // Load notifications from localStorage on mount
   useEffect(() => {
-    const savedNotifications = localStorage.getItem('did_notifications');
+    const notificationKey = getNotificationKey();
+    const savedNotifications = localStorage.getItem(notificationKey);
     if (savedNotifications) {
       try {
         const parsed = JSON.parse(savedNotifications);
         setNotifications(parsed);
+        console.log(`Loaded ${parsed.length} notifications from localStorage for key:`, notificationKey);
       } catch (err) {
         console.error('Failed to parse saved notifications:', err);
       }
     }
+    setIsLoaded(true);
   }, []);
 
-  // Save notifications to localStorage whenever they change
+  // Save notifications to localStorage whenever they change (but only after initial load)
   useEffect(() => {
-    localStorage.setItem('did_notifications', JSON.stringify(notifications));
-  }, [notifications]);
+    if (isLoaded) {
+      const notificationKey = getNotificationKey();
+      localStorage.setItem(notificationKey, JSON.stringify(notifications));
+      console.log(`Saved ${notifications.length} notifications to localStorage for key:`, notificationKey);
+    }
+  }, [notifications, isLoaded]);
 
   const addNotification = (notification) => {
     const newNotification = {
@@ -66,10 +89,32 @@ export const NotificationProvider = ({ children }) => {
 
   const clearAllNotifications = () => {
     setNotifications([]);
+    const notificationKey = getNotificationKey();
+    localStorage.removeItem(notificationKey);
+    console.log('Cleared all notifications for key:', notificationKey);
   };
 
   // Helper functions for specific notification types
+  const reloadNotifications = () => {
+    const notificationKey = getNotificationKey();
+    const savedNotifications = localStorage.getItem(notificationKey);
+    if (savedNotifications) {
+      try {
+        const parsed = JSON.parse(savedNotifications);
+        setNotifications(parsed);
+        console.log(`Reloaded ${parsed.length} notifications for key:`, notificationKey);
+      } catch (err) {
+        console.error('Failed to parse saved notifications:', err);
+      }
+    } else {
+      setNotifications([]);
+    }
+  };
+
   const addLoginNotification = (userAddress) => {
+    // Reload notifications for the newly logged in user
+    reloadNotifications();
+    
     addNotification({
       type: 'login',
       title: 'Successful Login',
@@ -100,6 +145,26 @@ export const NotificationProvider = ({ children }) => {
     });
   };
 
+  const addAppDeletedNotification = (appName) => {
+    addNotification({
+      type: 'app_deleted',
+      title: 'App Deleted',
+      message: `"${appName}" has been permanently deleted`,
+      icon: '🗑️',
+      color: 'red'
+    });
+  };
+
+  const addAppUpdatedNotification = (appName) => {
+    addNotification({
+      type: 'app_updated',
+      title: 'App Updated',
+      message: `"${appName}" details have been updated successfully`,
+      icon: '✏️',
+      color: 'blue'
+    });
+  };
+
   const getUnreadCount = () => {
     return notifications.filter(n => !n.read).length;
   };
@@ -111,9 +176,12 @@ export const NotificationProvider = ({ children }) => {
     markAllAsRead,
     deleteNotification,
     clearAllNotifications,
+    reloadNotifications,
     addLoginNotification,
     addAppCreatedNotification,
     addAppSetupNotification,
+    addAppDeletedNotification,
+    addAppUpdatedNotification,
     getUnreadCount
   };
 

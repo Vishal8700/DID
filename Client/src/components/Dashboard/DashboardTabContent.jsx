@@ -1,9 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { apps } from "../../data/app";
 import Profile from './Profile';
 import MyApps from './MyApps';
 import { useNavigate } from 'react-router-dom';
-
+import {
+  Bitcoin,
+  Brush,
+  Gamepad2,
+  Smartphone,
+  Lock,
+  Package,
+  Hospital,
+  BookOpen,
+  Zap
+} from "lucide-react";
 
 function TabContent({ tab, setActiveTab }) {
   const navigate = useNavigate();
@@ -43,20 +52,22 @@ function TabContent({ tab, setActiveTab }) {
     }
   };
 
-  const getCategoryIcon = (category) => {
-    const icons = {
-      'DeFi': '💰',
-      'NFT Marketplace': '🎨',
-      'Gaming': '🎮',
-      'Social Media': '📱',
-      'Identity Management': '🔐',
-      'Supply Chain': '📦',
-      'Healthcare': '🏥',
-      'Education': '📚',
-      'Other': '⚡'
-    };
-    return icons[category] || '⚡';
+ 
+const getCategoryIcon = (category) => {
+  const icons = {
+    "blockchain": <Bitcoin className="w-6 h-6 text-yellow-600" />,
+    "Crypto": <Brush className="w-6 h-6 text-pink-500" />,
+    "Gaming": <Gamepad2 className="w-6 h-6 text-green-500" />,
+    "Social Media": <Smartphone className="w-6 h-6 text-blue-500" />,
+    "Identity Management": <Lock className="w-6 h-6 text-orange-500" />,
+    "Supply Chain": <Package className="w-6 h-6 text-indigo-600" />,
+    "Healthcare": <Hospital className="w-6 h-6 text-red-500" />,
+    "Education": <BookOpen className="w-6 h-6 text-purple-500" />,
+    "Other": <Zap className="w-6 h-6 text-gray-500" />
   };
+
+  return icons[category] || <Zap className="w-6 h-6 text-gray-500" />;
+};
 
   if (tab === "home") {
     return (
@@ -164,7 +175,7 @@ function TabContent({ tab, setActiveTab }) {
                   <div className="p-6">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center">
-                        <div className="w-12 h-12 bg-gradient-to-r from-violet-500 to-purple-600 rounded-lg flex items-center justify-center text-white text-xl font-bold mr-3">
+                        <div className="w-12 h-12 bg-gradient-to-r from-violet-100 to-purple-200 rounded-lg flex items-center justify-center text-white text-xl font-bold mr-3">
                           {getCategoryIcon(app.category)}
                         </div>
                         <div>
@@ -204,19 +215,35 @@ function TabContent({ tab, setActiveTab }) {
                       <div className="text-xs text-gray-500">
                         Created {new Date(app.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </div>
-                      <button
-                        onClick={() => {
-                          localStorage.setItem('registered_app_id', app.appId);
-                          navigate('/app-setup');
-                        }}
-                        className="inline-flex items-center px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium rounded-md transition-colors"
-                      >
-                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Setup
-                      </button>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => {
+                            localStorage.setItem('registered_app_id', app.appId);
+                            navigate('/app-setup');
+                          }}
+                          className="inline-flex items-center px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white text-xs font-medium rounded-md transition-colors"
+                          title="Setup & Documentation"
+                        >
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          Setup
+                        </button>
+                        <button
+                          onClick={() => {
+                            localStorage.setItem('registered_app_id', app.appId);
+                            navigate('/app-setup?tab=settings');
+                          }}
+                          className="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-colors"
+                          title="Edit & Settings"
+                        >
+                          <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                          Edit
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>

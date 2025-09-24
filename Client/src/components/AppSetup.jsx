@@ -1,11 +1,29 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import {
+  Home,
+  ServerCog,
+  Palette,
+  BookOpen,
+  Settings
+} from "lucide-react";
+import { useToast } from '../hooks/useToast';
+import ToastContainer from './ToastContainer';
+import { useNotifications } from '../contexts/NotificationContext';
 function AppSetup() {
   const navigate = useNavigate();
+  const { toasts, success, error, removeToast } = useToast();
+  const { addAppDeletedNotification, addAppUpdatedNotification } = useNotifications();
   const [appData, setAppData] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({});
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const appId = localStorage.getItem('registered_app_id');
@@ -14,15 +32,64 @@ function AppSetup() {
       return;
     }
     
-    // Mock app data - in real app, fetch from API
-    setAppData({
-      id: appId,
-      name: 'My Awesome dApp',
-      developer: 'John Doe',
-      apiKey: 'sk_' + Math.random().toString(36).substr(2, 32),
-      appId: 'app_' + Math.random().toString(36).substr(2, 16)
-    });
+    // Check URL parameters for tab
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam && ['overview', 'backend', 'frontend', 'api', 'settings'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+    
+    // Fetch real app data from API
+    fetchAppData(appId);
   }, [navigate]);
+
+  const fetchAppData = async (appId) => {
+    setIsLoading(true);
+    try {
+      const token = localStorage.getItem('Testnet_auth_token');
+      if (!token) {
+        error('Authentication required');
+        navigate('/dashboard');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/app/${appId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setAppData({
+          id: data.app.appId,
+          name: data.app.appName,
+          developer: data.app.developerName,
+          apiKey: data.app.apiKey,
+          appId: data.app.appId,
+          description: data.app.description || '',
+          category: data.app.category || 'Other',
+          email: data.app.email,
+          organizationName: data.app.organizationName,
+          profession: data.app.profession,
+          isActive: data.app.isActive,
+          createdAt: data.app.createdAt
+        });
+      } else if (response.status === 404) {
+        error('Application not found');
+        navigate('/dashboard');
+      } else {
+        throw new Error('Failed to fetch app data');
+      }
+    } catch (err) {
+      console.error('Failed to fetch app data:', err);
+      error('Failed to load application data');
+      navigate('/dashboard');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleDownload = async (type) => {
     setIsDownloading(true);
@@ -42,17 +109,130 @@ function AppSetup() {
     }
   };
 
+  const handleEditStart = () => {
+    setEditForm({
+      name: appData.name,
+      developer: appData.developer,
+      description: appData.description || '',
+      category: appData.category || 'Other'
+    });
+    setIsEditing(true);
+  };
+
+  const handleEditCancel = () => {
+    setIsEditing(false);
+    setEditForm({});
+  };
+
+  const handleEditSave = async () => {
+    setIsSaving(true);
+    try {
+      const token = localStorage.getItem('Testnet_auth_token');
+      if (!token) {
+        error('Authentication required');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/apps/${appData.appId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editForm),
+      });
+
+      if (response.ok) {
+        const updatedApp = await response.json();
+        // Update local state with new data
+        setAppData(prev => ({ 
+          ...prev, 
+          name: editForm.name,
+          developer: editForm.developer,
+          description: editForm.description,
+          category: editForm.category
+        }));
+        setIsEditing(false);
+        setEditForm({});
+        success('App updated successfully!');
+        // Add to notification center
+        addAppUpdatedNotification(editForm.name);
+      } else {
+        throw new Error('Failed to update app');
+      }
+    } catch (error) {
+      console.error('Update failed:', error);
+      error('Failed to update app. Please try again.');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteStart = () => {
+    setShowDeleteModal(true);
+    setDeleteConfirmText('');
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteModal(false);
+    setDeleteConfirmText('');
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (deleteConfirmText !== appData.name) {
+      error('Please type the exact app name to confirm deletion');
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const token = localStorage.getItem('Testnet_auth_token');
+      if (!token) {
+        error('Authentication required');
+        return;
+      }
+
+      const response = await fetch(`http://localhost:5000/api/apps/${appData.appId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (response.ok) {
+        localStorage.removeItem('registered_app_id');
+        success('App deleted successfully!');
+        // Add to notification center
+        addAppDeletedNotification(appData.name);
+        navigate('/dashboard');
+      } else {
+        throw new Error('Failed to delete app');
+      }
+    } catch (error) {
+      console.error('Delete failed:', error);
+      error('Failed to delete app. Please try again.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
   const tabs = [
-    { id: 'overview', name: 'Overview', icon: '🏠' },
-    { id: 'backend', name: 'Backend Setup', icon: '⚙️' },
-    { id: 'frontend', name: 'Frontend Setup', icon: '🎨' },
-    { id: 'api', name: 'API Reference', icon: '📚' }
+    { id: "overview", name: "Overview", icon: <Home className="w-5 h-5" /> },
+    { id: "backend", name: "Backend Setup", icon: <ServerCog className="w-5 h-5" /> },
+    { id: "frontend", name: "Frontend Setup", icon: <Palette className="w-5 h-5" /> },
+    { id: "api", name: "API Reference", icon: <BookOpen className="w-5 h-5" /> },
+    { id: "settings", name: "Settings", icon: <Settings className="w-5 h-5" /> }
   ];
 
-  if (!appData) {
+  if (isLoading || !appData) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-500"></div>
+          <p className="text-white text-lg">Loading application data...</p>
+        </div>
       </div>
     );
   }
@@ -337,11 +517,254 @@ const API_BASE_URL = 'http://localhost:5000';`}
                     </div>
                   </div>
                 )}
+
+                {activeTab === 'settings' && (
+                  <div className="space-y-8">
+                    <div>
+                      <h2 className="text-3xl font-bold text-white mb-4">⚙️ Project Settings</h2>
+                      <p className="text-slate-300 text-lg">
+                        Manage your application settings, update project details, or delete your project.
+                      </p>
+                    </div>
+
+                    {/* Update Project Section */}
+                    <div className="bg-gradient-to-br from-blue-600/20 to-cyan-600/20 rounded-xl p-6 border border-blue-500/30">
+                      <div className="flex items-center mb-6">
+                        <div className="w-12 h-12 bg-blue-600 rounded-lg flex items-center justify-center">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                          </svg>
+                        </div>
+                        <div className="ml-4">
+                          <h3 className="text-xl font-semibold text-white">Update Project Details</h3>
+                          <p className="text-slate-300">Modify your application information and settings</p>
+                        </div>
+                      </div>
+
+                      {!isEditing ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="bg-black/30 rounded-lg p-4">
+                              <label className="text-sm text-slate-400">App Name</label>
+                              <p className="text-white font-medium">{appData.name}</p>
+                            </div>
+                            <div className="bg-black/30 rounded-lg p-4">
+                              <label className="text-sm text-slate-400">Developer</label>
+                              <p className="text-white font-medium">{appData.developer}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={handleEditStart}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+                          >
+                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit Project Details
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <label className="block text-sm text-slate-400 mb-2">App Name</label>
+                              <input
+                                type="text"
+                                value={editForm.name || ''}
+                                onChange={(e) => setEditForm(prev => ({ ...prev, name: e.target.value }))}
+                                className="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter app name"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm text-slate-400 mb-2">Developer Name</label>
+                              <input
+                                type="text"
+                                value={editForm.developer || ''}
+                                onChange={(e) => setEditForm(prev => ({ ...prev, developer: e.target.value }))}
+                                className="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter developer name"
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm text-slate-400 mb-2">Description</label>
+                            <textarea
+                              value={editForm.description || ''}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, description: e.target.value }))}
+                              className="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              rows="3"
+                              placeholder="Enter app description"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm text-slate-400 mb-2">Category</label>
+                            <select
+                              value={editForm.category || ''}
+                              onChange={(e) => setEditForm(prev => ({ ...prev, category: e.target.value }))}
+                              className="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              <option value="DeFi">DeFi</option>
+                              <option value="NFT Marketplace">NFT Marketplace</option>
+                              <option value="Gaming">Gaming</option>
+                              <option value="Social Media">Social Media</option>
+                              <option value="Identity Management">Identity Management</option>
+                              <option value="Supply Chain">Supply Chain</option>
+                              <option value="Healthcare">Healthcare</option>
+                              <option value="Education">Education</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+                          <div className="flex space-x-3">
+                            <button
+                              onClick={handleEditSave}
+                              disabled={isSaving}
+                              className="flex-1 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+                            >
+                              {isSaving ? (
+                                <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                              ) : (
+                                <>
+                                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                  </svg>
+                                  Save Changes
+                                </>
+                              )}
+                            </button>
+                            <button
+                              onClick={handleEditCancel}
+                              className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+                            >
+                              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                              </svg>
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Danger Zone */}
+                    <div className="bg-gradient-to-br from-red-600/20 to-pink-600/20 rounded-xl p-6 border border-red-500/30">
+                      <div className="flex items-center mb-6">
+                        <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                          <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                          </svg>
+                        </div>
+                        <div className="ml-4">
+                          <h3 className="text-xl font-semibold text-white">Danger Zone</h3>
+                          <p className="text-slate-300">Permanently delete this project and all associated data</p>
+                        </div>
+                      </div>
+
+                      <div className="bg-black/30 rounded-lg p-4 mb-4">
+                        <h4 className="text-lg font-semibold text-red-400 mb-2">⚠️ Warning</h4>
+                        <ul className="text-slate-300 space-y-1 text-sm">
+                          <li>• This action cannot be undone</li>
+                          <li>• All project data will be permanently deleted</li>
+                          <li>• API keys will be immediately revoked</li>
+                          <li>• All associated integrations will stop working</li>
+                        </ul>
+                      </div>
+
+                      <button
+                        onClick={handleDeleteStart}
+                        className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+                      >
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        Delete Project
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-slate-800 rounded-xl border border-red-500/30 p-6 max-w-md w-full mx-4">
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-red-600 rounded-lg flex items-center justify-center">
+                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.35 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+              </div>
+              <div className="ml-4">
+                <h3 className="text-xl font-semibold text-white">Delete Project</h3>
+                <p className="text-slate-300">This action cannot be undone</p>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <p className="text-slate-300 mb-4">
+                Are you sure you want to delete <span className="font-semibold text-red-400">{appData.name}</span>? 
+                This will permanently delete the project and all associated data.
+              </p>
+              
+              <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-4 mb-4">
+                <p className="text-red-300 text-sm font-medium mb-2">
+                  To confirm deletion, please type the exact app name:
+                </p>
+                <p className="text-red-400 font-mono text-sm mb-3">{appData.name}</p>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={(e) => setDeleteConfirmText(e.target.value)}
+                  className="w-full bg-black/50 border border-red-500/50 rounded-lg px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="Type app name here..."
+                />
+              </div>
+            </div>
+
+            <div className="flex space-x-3">
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting || deleteConfirmText !== appData.name}
+                className="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+              >
+                {isDeleting ? (
+                  <svg className="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <>
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Delete Forever
+                  </>
+                )}
+              </button>
+              <button
+                onClick={handleDeleteCancel}
+                disabled={isDeleting}
+                className="flex-1 bg-gray-600 hover:bg-gray-700 disabled:opacity-50 text-white font-semibold py-3 px-4 rounded-lg transition-colors flex items-center justify-center"
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onRemoveToast={removeToast} />
     </div>
   );
 }
