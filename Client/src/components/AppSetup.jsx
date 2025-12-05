@@ -32,6 +32,7 @@ import {
 import { useToast } from '../hooks/useToast';
 import ToastContainer from './ToastContainer';
 import { useNotifications } from '../contexts/NotificationContext';
+import { API_URL } from '../config/api';
 
 function AppSetup() {
   const navigate = useNavigate();
@@ -75,7 +76,7 @@ function AppSetup() {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/app/${appId}`, {
+      const response = await fetch(`${API_URL}/api/app/${appId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -137,7 +138,7 @@ function AppSetup() {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/apps/${appData.appId}`, {
+      const response = await fetch(`${API_URL}/api/apps/${appData.appId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -196,7 +197,7 @@ function AppSetup() {
         return;
       }
 
-      const response = await fetch(`http://localhost:5000/api/apps/${appData.appId}`, {
+      const response = await fetch(`${API_URL}/api/apps/${appData.appId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

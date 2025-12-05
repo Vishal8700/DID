@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '../contexts/NotificationContext';
+import { API_URL } from '../config/api';
 import './AppRegistration.css';
 
 function AppRegistration() {
@@ -59,7 +60,7 @@ function AppRegistration() {
     setIsLoading(true);
     try {
       const token = localStorage.getItem('Testnet_auth_token');
-      const response = await fetch('http://localhost:5000/api/register-app', {
+      const response = await fetch(`${API_URL}/api/register-app`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

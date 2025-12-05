@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Profile from './Profile';
 import MyApps from './MyApps';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../../config/api';
 import {
   Bitcoin,
   Brush,
@@ -33,7 +34,7 @@ function TabContent({ tab, setActiveTab }) {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/my-apps', {
+      const response = await fetch(`${API_URL}/api/my-apps`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',

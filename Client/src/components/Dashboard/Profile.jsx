@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_URL } from '../../config/api';
 
 
 
@@ -54,7 +55,7 @@ function Profile() {
                 return;
             }
 
-            const response = await fetch('http://localhost:5000/api/userinfo', {
+            const response = await fetch(`${API_URL}/api/userinfo`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json',
@@ -102,7 +103,7 @@ function Profile() {
 
         try {
             const token = localStorage.getItem('Testnet_auth_token');
-            const response = await fetch('http://localhost:5000/api/settings/relogin-period', {
+            const response = await fetch(`${API_URL}/api/settings/relogin-period`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

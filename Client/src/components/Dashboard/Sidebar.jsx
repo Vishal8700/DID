@@ -5,6 +5,7 @@ import React, { useState, useEffect } from "react";
 import "./Sidebar.css";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
 import { jwtDecode } from "jwt-decode";
+import { API_URL } from '../../config/api';
 
 // SVG Icons
 const MagicIcon = () => (
@@ -85,7 +86,7 @@ function Sidebar({ sidebarOpen, setSidebarOpen, mobileMenuOpen, setMobileMenuOpe
     const fetchUserInfo = async () => {
       if (token) {
         try {
-          const res = await fetch("http://localhost:5000/api/userinfo", {
+          const res = await fetch(`${API_URL}/api/userinfo`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = await res.json();

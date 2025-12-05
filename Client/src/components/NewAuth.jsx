@@ -6,6 +6,7 @@ import { ethers } from "ethers";
 import { jwtDecode } from "jwt-decode";
 import Dashboard from "./Dashboard/Dashboard"; 
 import { useNotifications } from "../contexts/NotificationContext";
+import { API_URL } from "../config/api";
 import "./NewAuth.css";
 
 function TestnetAuth({ onAuthSuccess }) {
@@ -63,7 +64,7 @@ function TestnetAuth({ onAuthSuccess }) {
       setAccount(address);
       setAuthStatus("Wallet connected successfully!");
       try {
-        const ensRes = await fetch("http://localhost:5000/api/resolve-ens", {
+        const ensRes = await fetch(`${API_URL}/api/resolve-ens`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ address }),
@@ -96,7 +97,7 @@ function TestnetAuth({ onAuthSuccess }) {
     setIsLoading(true);
     setAuthStatus("");
     try {
-      const res = await fetch(`http://localhost:5000/api/challenge/${account}?t=${Date.now()}`, {
+      const res = await fetch(`${API_URL}/api/challenge/${account}?t=${Date.now()}`, {
         signal: AbortSignal.timeout(10000),
       });
       const data = await res.json();
@@ -120,7 +121,7 @@ function TestnetAuth({ onAuthSuccess }) {
       const sig = await signer.signMessage(data.challenge);
       setSignature(sig);
 
-      const authRes = await fetch("http://localhost:5000/api/auth", {
+      const authRes = await fetch(`${API_URL}/api/auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ address: account, signature: sig }),

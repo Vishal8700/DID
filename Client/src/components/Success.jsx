@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { jwtDecode } from "jwt-decode"; // Add this to handle token expiration
+import { API_URL } from "../config/api";
 
 function Success() {
   const [userInfo, setUserInfo] = useState(null);
@@ -10,7 +11,7 @@ function Success() {
     const fetchData = async () => {
       if (token) {
         try {
-          const res = await fetch("http://localhost:5000/api/userinfo", {
+          const res = await fetch(`${API_URL}/api/userinfo`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           const data = await res.json();
@@ -33,7 +34,7 @@ function Success() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/api/settings/relogin-period", {
+      const res = await fetch(`${API_URL}/api/settings/relogin-period`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
