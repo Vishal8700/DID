@@ -39,7 +39,7 @@ ChallengeSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 const Challenge = mongoose.model("Challenge", ChallengeSchema);
 
 // Middleware
-app.use(cors({ origin: ["http://localhost:5173"] }));
+app.use(cors({ origin: "*", credentials: false }));
 app.use(express.json());
 
 // Configure trust proxy
@@ -88,8 +88,8 @@ app.get("/api/challenge/:address", async (req, res) => {
 
   try {
     const nonce = ethers.hexlify(ethers.randomBytes(32));
-    const domain = "http://localhost:5173";
-    const uri = "http://localhost:5173";
+    const domain = process.env.FRONTEND_URL || req.headers.origin || "http://localhost:5173";
+    const uri = process.env.FRONTEND_URL || req.headers.origin || "http://localhost:5173";
     const message = new SiweMessage({
       domain,
       address,
@@ -348,8 +348,8 @@ app.post("/api/register-app", authenticateJWT, async (req, res) => {
 
   try {
     // Generate unique IDs
-    const appId = 'app_' + Math.random().toString(36).substr(2, 16);
-    const apiKey = 'sk_' + Math.random().toString(36).substr(2, 32);
+    const appId = 'app_' + Math.random().toString(36).substring(2, 18);
+    const apiKey = 'sk_' + Math.random().toString(36).substring(2, 34);
 
     // Create new app
     const newApp = await App.create({
@@ -490,4 +490,13 @@ app.delete("/api/apps/:appId", authenticateJWT, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Auth server running on http://localhost:${PORT}`));
+// app.listen(PORT, () => console.log(`Auth server running on http://localhost:${PORT}`));
+
+
+// Routes
+app.get("/", (req, res) => {
+  res.json({ message: "Hello from Vercel Express!" });
+});
+
+// Export for Vercel serverless
+export default app;

@@ -1,4 +1,4 @@
-# DID (Decentralized Identity) System Architecture Analysis
+# DID (Decentralized Identity) System Architecture
 
 ## Overview
 
