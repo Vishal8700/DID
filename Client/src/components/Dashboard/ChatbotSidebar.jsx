@@ -1,3 +1,5 @@
+
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, X, MessageCircle, Loader2, BookOpen, Minimize2 } from 'lucide-react';
 
@@ -56,6 +58,50 @@ const ChatbotSidebar = ({ onOpenChange }) => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
+
+  // Function to render message content with clickable links
+  const renderMessageContent = (content) => {
+    // Match markdown links [text](url) and plain URLs
+    const parts = content.split(/(\[.*?\]\(.*?\)|https?:\/\/[^\s]+|\/[^\s]+\.docx)/g);
+    
+    return parts.map((part, index) => {
+      // Markdown link [text](url)
+      const markdownMatch = part.match(/\[(.*?)\]\((.*?)\)/);
+      if (markdownMatch) {
+        const [, text, url] = markdownMatch;
+        return (
+          <a
+            key={index}
+            href={url}
+            download={url.endsWith('.docx')}
+            className="text-blue-600 hover:text-blue-800 underline font-medium"
+            target={url.startsWith('http') ? '_blank' : undefined}
+            rel={url.startsWith('http') ? 'noopener noreferrer' : undefined}
+          >
+            {text}
+          </a>
+        );
+      }
+      
+      // Plain URL or file path
+      if (part.match(/^(https?:\/\/|\/)/)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            download={part.endsWith('.docx')}
+            className="text-blue-600 hover:text-blue-800 underline break-all"
+            target={part.startsWith('http') ? '_blank' : undefined}
+            rel={part.startsWith('http') ? 'noopener noreferrer' : undefined}
+          >
+            {part}
+          </a>
+        );
+      }
+      
+      return <span key={index}>{part}</span>;
+    });
+  };
 
   useEffect(() => {
     onOpenChange?.(isOpen && !isMinimized);
@@ -261,7 +307,9 @@ const ChatbotSidebar = ({ onOpenChange }) => {
                       : 'bg-white text-gray-800 shadow-sm border border-gray-200'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                  <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                    {renderMessageContent(msg.content)}
+                  </div>
                 </div>
               </div>
             ))}

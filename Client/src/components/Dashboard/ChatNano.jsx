@@ -48,6 +48,50 @@ const ChatNano = () => {
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef(null);
 
+  // Function to render message content with clickable links
+  const renderMessageContent = (content) => {
+    // Match markdown links [text](url) and plain URLs
+    const parts = content.split(/(\[.*?\]\(.*?\)|https?:\/\/[^\s]+|\/[^\s]+\.docx)/g);
+    
+    return parts.map((part, index) => {
+      // Markdown link [text](url)
+      const markdownMatch = part.match(/\[(.*?)\]\((.*?)\)/);
+      if (markdownMatch) {
+        const [, text, url] = markdownMatch;
+        return (
+          <a
+            key={index}
+            href={url}
+            download={url.endsWith('.docx')}
+            className="text-blue-600 hover:text-blue-800 underline font-medium"
+            target={url.startsWith('http') ? '_blank' : undefined}
+            rel={url.startsWith('http') ? 'noopener noreferrer' : undefined}
+          >
+            {text}
+          </a>
+        );
+      }
+      
+      // Plain URL or file path
+      if (part.match(/^(https?:\/\/|\/)/)) {
+        return (
+          <a
+            key={index}
+            href={part}
+            download={part.endsWith('.docx')}
+            className="text-blue-600 hover:text-blue-800 underline break-all"
+            target={part.startsWith('http') ? '_blank' : undefined}
+            rel={part.startsWith('http') ? 'noopener noreferrer' : undefined}
+          >
+            {part}
+          </a>
+        );
+      }
+      
+      return <span key={index}>{part}</span>;
+    });
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
@@ -211,7 +255,9 @@ const ChatNano = () => {
                       : 'bg-gray-100 text-gray-800'
                   }`}
                 >
-                  <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                  <div className="text-sm whitespace-pre-wrap">
+                    {renderMessageContent(msg.content)}
+                  </div>
                 </div>
               </div>
             ))}
