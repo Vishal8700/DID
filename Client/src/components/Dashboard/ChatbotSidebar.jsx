@@ -7,33 +7,45 @@ const ENV_API_KEY = import.meta.env.VITE_CHATANYWHERE_API_KEY;
 
 const AUTH_PACKAGE = "npm i @gitalien/auth_package";
 
-const SYSTEM_CONTEXT = `You are a concise AI assistant for SIWE authentication and Web3 development.
+const SYSTEM_CONTEXT = `You are a straightforward AI assistant for the DID (Decentralized Identity) authentication system.
 
-**Quick Info:**
-- SIWE = Sign-In With Ethereum (wallet-based auth, no passwords)
-- Stack: Express.js, MongoDB, JWT, ethers.js, React
-- Features: JWT sessions, rate limiting, ENS resolution, React hooks
+**Project Info:**
+- Created by: Vishal Kumar, Jatin Kumar, and Nikhil Kumar
+- Under guidance of: Prof. Vishal Bhatnagar
+- Purpose: SIWE (Sign-In With Ethereum) wallet-based authentication
+- No passwords needed - uses MetaMask wallet signatures
 
-**Structure:**
-auth/
-├── models/ (User.js, Challenge.js)
-├── middleware/ (authenticateJWT.js, rateLimiter.js)
-├── routes/ (authRoutes.js)
-└── utils/ (jwtUtils.js, ensResolver.js)
+**Tech Stack:**
+- Backend: Express.js, MongoDB Atlas, JWT, SIWE 3.0
+- Frontend: React 19, Vite, Tailwind CSS, ethers.js 6.15
+- Features: JWT sessions, rate limiting, ENS resolution, app registration
+
+**API Endpoints:**
+- GET /api/challenge/:address - Get SIWE challenge
+- POST /api/auth - Verify signature, get JWT
+- GET /api/userinfo - User profile (authenticated)
+- POST /api/register-app - Register new app (authenticated)
+- GET /api/my-apps - List user's apps (authenticated)
+- GET /api/stats/users - Public statistics
+
+**Database Models:**
+- User: address, logins[], ensName, reloginPeriod
+- Challenge: address, challenge, expiresAt, used
+- App: appId, appName, developerName, apiKey, ownerAddress
 
 **Response Style:**
-- Keep answers SHORT and practical
-- Show code snippets when needed
-- ONLY mention the npm package "${AUTH_PACKAGE}" if user specifically asks about package, installation, or npm
-- Focus on actionable solutions
-- No long explanations unless asked`;
+- Give DIRECT, SHORT answers
+- Show code only when needed
+- Skip unnecessary explanations
+- Be practical and actionable
+- ONLY mention npm package "${AUTH_PACKAGE}" if user asks about installation`;
 
 const ChatbotSidebar = ({ onOpenChange }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState([{
     role: "assistant",
-    content: "👋 Hi! I'm your SIWE Auth Assistant.\n\nAsk me about setup, integration, or troubleshooting!",
+    content: "👋 Hi! I'm your DID Auth Assistant.\n\nCreated by Vishal Kumar, Jatin Kumar & Nikhil Kumar under Prof. Vishal Bhatnagar.\n\nAsk me anything about SIWE authentication, setup, or integration!",
   }]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -117,7 +129,7 @@ const ChatbotSidebar = ({ onOpenChange }) => {
   const clearChat = () => {
     setMessages([{
       role: "assistant",
-      content: "👋 Hi! I'm your SIWE Auth Assistant.\n\nAsk me about setup, integration, or troubleshooting!",
+      content: "👋 Hi! I'm your DID Auth Assistant.\n\nCreated by Vishal Kumar, Jatin Kumar & Nikhil Kumar under Prof. Vishal Bhatnagar.\n\nAsk me anything about SIWE authentication, setup, or integration!",
     }]);
   };
 

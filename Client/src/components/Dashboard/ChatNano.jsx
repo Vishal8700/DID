@@ -5,12 +5,38 @@ const CHATANYWHERE_ENDPOINT = import.meta.env.VITE_CHATANYWHERE_ENDPOINT || "htt
 const DEFAULT_MODEL = import.meta.env.VITE_CHATANYWHERE_MODEL || "gpt-5-nano";
 const ENV_API_KEY = import.meta.env.VITE_CHATANYWHERE_API_KEY;
 
+const SYSTEM_CONTEXT = `You are a helpful assistant for the DID (Decentralized Identity) authentication system.
+
+**Project Creators:**
+- Vishal Kumar, Jatin Kumar, Nikhil Kumar
+- Under guidance of Prof. Vishal Bhatnagar
+
+**System Overview:**
+- SIWE (Sign-In With Ethereum) wallet authentication
+- No passwords - uses MetaMask signatures
+- Backend: Express.js + MongoDB + JWT
+- Frontend: React + Vite + Tailwind
+- Deployed on Vercel
+
+**Key Features:**
+- Wallet-based login (MetaMask)
+- JWT token authentication
+- App registration & API key management
+- ENS name resolution
+- Rate limiting & security
+
+**Response Style:**
+- Be DIRECT and CONCISE
+- Give practical answers
+- Show code snippets when helpful
+- Skip unnecessary details`;
+
 const ChatNano = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [apiKey, setApiKey] = useState(ENV_API_KEY || "");
   const [messages, setMessages] = useState([{
     role: "assistant",
-    content: "Hi, I am your nano-mode assistant (model: gpt-5-nano). Ask me anything about Web3 authentication!",
+    content: "Hi! I'm your DID Auth Assistant.\n\nThis project was created by Vishal Kumar, Jatin Kumar & Nikhil Kumar under the guidance of Prof. Vishal Bhatnagar.\n\nAsk me anything about SIWE authentication!",
   }]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -50,6 +76,12 @@ const ChatNano = () => {
     setIsLoading(true);
 
     try {
+      const conversationHistory = [
+        { role: "system", content: SYSTEM_CONTEXT },
+        ...messages.slice(-10), // Keep last 10 messages for context
+        userMessage
+      ];
+
       const response = await fetch(CHATANYWHERE_ENDPOINT, {
         method: "POST",
         headers: {
@@ -58,8 +90,9 @@ const ChatNano = () => {
         },
         body: JSON.stringify({
           model: DEFAULT_MODEL,
-          messages: [...messages, userMessage],
+          messages: conversationHistory,
           temperature: 0.7,
+          max_tokens: 800,
         }),
       });
 
