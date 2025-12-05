@@ -33,6 +33,12 @@ const SYSTEM_CONTEXT = `You are a straightforward AI assistant for the DID (Dece
 - Challenge: address, challenge, expiresAt, used
 - App: appId, appName, developerName, apiKey, ownerAddress
 
+**Research Paper:**
+If user asks for research paper, documentation, or paper download, respond with:
+"📄 You can download the research paper here: [Download Research Paper](/research_paper.docx)
+
+The paper covers the complete DID authentication system architecture, implementation details, and security analysis."
+
 **Response Style:**
 - Give DIRECT, SHORT answers
 - Show code only when needed
@@ -83,6 +89,9 @@ const ChatbotSidebar = ({ onOpenChange }) => {
         userMessage
       ];
 
+      console.log('Sending request to:', CHATANYWHERE_ENDPOINT);
+      console.log('Using model:', DEFAULT_MODEL);
+      
       const response = await fetch(CHATANYWHERE_ENDPOINT, {
         method: "POST",
         headers: {
@@ -97,8 +106,12 @@ const ChatbotSidebar = ({ onOpenChange }) => {
         }),
       });
 
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error(`API Error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error Response:', errorData);
+        throw new Error(`API Error: ${response.status} - ${errorData.error?.message || 'Unknown error'}`);
       }
 
       const data = await response.json();
@@ -110,9 +123,20 @@ const ChatbotSidebar = ({ onOpenChange }) => {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Chat error:", error);
+      let errorMessage = `❌ Error: ${error.message}`;
+      
+      // More specific error messages
+      if (error.message.includes('401')) {
+        errorMessage = '❌ API Key is invalid or expired. Please check your .env configuration.';
+      } else if (error.message.includes('429')) {
+        errorMessage = '❌ Rate limit exceeded. Please wait a moment and try again.';
+      } else if (error.message.includes('Failed to fetch')) {
+        errorMessage = '❌ Network error. Check your internet connection or API endpoint.';
+      }
+      
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: `❌ Error: ${error.message}. Please try again or check your configuration.`,
+        content: errorMessage,
       }]);
     } finally {
       setIsLoading(false);
@@ -207,6 +231,13 @@ const ChatbotSidebar = ({ onOpenChange }) => {
               >
                 React
               </button>
+              <a
+                href="/research_paper.docx"
+                download
+                className="text-xs px-3 py-1.5 bg-white hover:bg-green-50 text-green-700 rounded-full border border-green-200 transition-colors inline-block"
+              >
+                📄 Research Paper
+              </a>
               <button
                 onClick={clearChat}
                 className="text-xs px-3 py-1.5 bg-white hover:bg-red-50 text-red-600 rounded-full border border-red-200 transition-colors"

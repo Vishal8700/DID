@@ -25,6 +25,12 @@ const SYSTEM_CONTEXT = `You are a helpful assistant for the DID (Decentralized I
 - ENS name resolution
 - Rate limiting & security
 
+**Research Paper:**
+If user asks for research paper, documentation, or paper download, respond with:
+"📄 Download the research paper: [Click here to download](/research_paper.docx)
+
+The paper includes complete system architecture and implementation details."
+
 **Response Style:**
 - Be DIRECT and CONCISE
 - Give practical answers
@@ -109,9 +115,20 @@ const ChatNano = () => {
       setMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Chat error:", error);
+      let errorMessage = `❌ Error: ${error.message}`;
+      
+      // More specific error messages
+      if (error.message.includes('401')) {
+        errorMessage = '❌ API Key is invalid. Please check your .env file.';
+      } else if (error.message.includes('429')) {
+        errorMessage = '❌ Too many requests. Please wait and try again.';
+      } else if (error.message.includes('Failed to fetch')) {
+        errorMessage = '❌ Network error. Check your connection.';
+      }
+      
       setMessages(prev => [...prev, {
         role: "assistant",
-        content: `Error: ${error.message}. Please check your API key and try again.`,
+        content: errorMessage,
       }]);
     } finally {
       setIsLoading(false);
